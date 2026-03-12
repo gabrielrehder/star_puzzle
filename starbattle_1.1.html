@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<title>Star Battle</title>
+<style>
+  :root {
+    --bg: #f2f2f2;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --border: #d0d0d0;
+    --border-strong: #111111;
+    --text: #111111;
+    --muted: #888888;
+    --gold: #111111;
+    --gold2: #333333;
+    --easy: #111111;
+    --medium: #111111;
+    --hard: #111111;
+    --expert: #111111;
+    --err: #e03030;
+    --dot: #aaaaaa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Georgia', 'Times New Roman', serif;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 0 0 60px;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  #nav {
+    width: 100%; max-width: 480px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px 0;
+  }
+  .nav-back {
+    background: none; border: none; color: var(--muted);
+    font-size: 15px; cursor: pointer; font-family: inherit;
+    padding: 6px 0; letter-spacing: 0.5px;
+  }
+  .nav-back:hover { color: var(--text); }
+  .nav-timer {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 16px;
+    font-size: 16px; letter-spacing: 2px; color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .nav-new {
+    background: none; border: 1px solid var(--border);
+    color: var(--muted); font-size: 13px; cursor: pointer;
+    padding: 5px 14px; border-radius: 8px; font-family: inherit;
+  }
+  .nav-new:hover { color: var(--text); border-color: var(--muted); }
+
+  /* ── HOME ── */
+  #home { width: 100%; max-width: 420px; padding: 0 16px; }
+
+  .hero {
+    text-align: center;
+    padding: 36px 0 28px;
+  }
+  .hero-stars {
+    display: flex; justify-content: center; gap: 10px; margin-bottom: 14px;
+  }
+  .hero-star { font-size: 20px; opacity: 0.6; }
+  .hero-star.big { font-size: 30px; opacity: 1; }
+  .hero-title {
+    font-size: 38px; font-weight: normal; letter-spacing: 8px;
+    color: var(--text); text-shadow: none; letter-spacing: 10px;
+    margin-bottom: 10px;
+  }
+  .hero-sub {
+    font-size: 13px; color: var(--muted); line-height: 1.9; letter-spacing: 0.3px; font-style: italic;
+  }
+
+  /* stat bar */
+  .overall-stats {
+    display: flex; gap: 12px; margin-bottom: 24px;
+    background: var(--surface); border: 1.5px solid var(--border-strong);
+    border-radius: 0px; padding: 14px;
+  }
+  .stat-item { flex: 1; text-align: center; }
+  .stat-num { font-size: 22px; color: var(--text); display: block; font-weight: bold; }
+  .stat-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+  /* diff cards */
+  .diff-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+  .diff-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 0px; padding: 16px 18px;
+    transition: border-color .2s;
+  }
+  .diff-card:hover { border-color: var(--muted); }
+  .diff-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .diff-left { display: flex; align-items: center; gap: 10px; }
+  .diff-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .diff-name { font-size: 17px; color: var(--text); }
+  .diff-tag { font-size: 11px; color: var(--muted); margin-left: 2px; }
+  .skip-badge {
+    font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    background: rgba(255,255,255,0.06); color: var(--muted);
+  }
+  .diff-stats {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .diff-nums { display: flex; align-items: baseline; gap: 3px; }
+  .diff-big { font-size: 20px; color: var(--text); }
+  .diff-of { font-size: 12px; color: var(--muted); }
+  .rate-chip {
+    font-size: 13px; font-weight: bold;
+    border: 1.5px solid; border-radius: 8px; padding: 2px 10px;
+  }
+  .no-games { font-size: 12px; color: var(--muted); font-style: italic; }
+  .diff-btns { display: flex; gap: 10px; }
+  .btn-primary {
+    flex: 1; padding: 11px 0; border: none; border-radius: 9px;
+    color: #fff; font-size: 14px; cursor: pointer;
+    font-family: inherit; letter-spacing: 0.5px;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn-primary:active { transform: scale(0.97); opacity: 0.85; }
+  .btn-primary:disabled { opacity: 0.5; cursor: default; }
+  .btn-outline {
+    flex: 1; padding: 10px 0; background: none;
+    border: 1.5px solid var(--border); border-radius: 9px;
+    color: var(--muted); font-size: 13px; cursor: pointer;
+    font-family: inherit; transition: color .15s, border-color .15s;
+  }
+  .btn-outline:hover { color: var(--text); border-color: var(--muted); }
+  .btn-outline:active { transform: scale(0.97); }
+
+  .home-footer {
+    text-align: center; font-size: 11px; color: var(--dot);
+    line-height: 1.9; padding-bottom: 20px;
+  }
+
+  /* ── GAME ── */
+  #game { width: 100%; max-width: 480px; padding: 0 8px; display: none; flex-direction: column; align-items: center; }
+
+  .game-meta {
+    display: flex; align-items: center; gap: 8px;
+    margin: 10px 0 12px;
+  }
+  .meta-badge {
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 1.5px; text-transform: uppercase;
+  }
+  .meta-skip { color: var(--gold); }
+
+  /* grid */
+  #grid-wrap {
+    position: relative;
+    border: 2.5px solid #111111;
+    border-radius: 0px;
+    overflow: hidden;
+    box-shadow: none;
+    touch-action: none;
+  }
+  #grid-canvas { display: block; }
+
+  /* progress bar */
+  .progress-row {
+    width: 100%; display: flex; align-items: center; gap: 10px;
+    margin: 12px 0 4px;
+  }
+  .progress-bar-bg {
+    flex: 1; height: 4px; background: var(--border); border-radius: 2px;
+  }
+  .progress-bar-fill {
+    height: 100%; border-radius: 2px;
+    background: #111111; transition: width .3s;
+  }
+  .progress-text { font-size: 12px; color: var(--muted); min-width: 36px; text-align: right; }
+
+  .btn-skip {
+    margin-top: 16px; padding: 11px 36px;
+    background: none; border: 1.5px solid #aaaaaa;
+    border-radius: 0px; color: var(--muted); font-size: 13px;
+    cursor: pointer; font-family: inherit; letter-spacing: 0.3px;
+    transition: color .15s, border-color .15s;
+  }
+  .btn-skip:hover { color: var(--text); border-color: var(--muted); }
+
+  /* ── WIN OVERLAY ── */
+  #win-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(240,240,240,0.92);
+    align-items: center; justify-content: center; z-index: 200;
+  }
+  #win-overlay.show { display: flex; }
+  .win-card {
+    background: #ffffff; border: 2px solid #111111;
+    border-radius: 0px; padding: 34px 38px;
+    text-align: center; max-width: 310px; width: 90%;
+    box-shadow: 4px 4px 0px #111111;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .win-emoji { font-size: 52px; }
+  .win-title { font-size: 30px; font-weight: normal; letter-spacing: 4px; color: var(--text); }
+  .win-time { font-size: 26px; color: var(--text); letter-spacing: 2px; font-variant-numeric: tabular-nums; }
+  .win-diff { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .win-stats {
+    display: flex; gap: 12px; background: #f8f8f8;
+    border-radius: 0px; padding: 12px 14px; border: 1px solid var(--border);
+    width: 100%; justify-content: space-around; margin: 6px 0;
+  }
+  .ws-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .ws-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .ws-lbl { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .ws-rate { font-size: 16px; font-weight: bold; }
+  .ws-sub { font-size: 9px; color: var(--muted); }
+  .win-btns { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 4px; }
+
+  /* ── LOADING ── */
+  #loading-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(242,242,242,0.95);
+    align-items: center; justify-content: center; z-index: 300;
+    flex-direction: column; gap: 16px;
+  }
+  #loading-overlay.show { display: flex; }
+  .loading-stars { font-size: 28px; letter-spacing: 8px; animation: pulse 1.2s infinite; color: #111; }
+  .loading-text { font-size: 14px; color: #555; letter-spacing: 2px; }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-overlay">
+  <div class="loading-stars">★ ★ ★</div>
+  <div class="loading-text">GENERATING PUZZLE…</div>
+</div>
+
+<!-- WIN -->
+<div id="win-overlay">
+  <div class="win-card">
+    <div class="win-emoji">⭐</div>
+    <div class="win-title">SOLVED</div>
+    <div class="win-time" id="win-time">00:00</div>
+    <div class="win-diff" id="win-diff"></div>
+    <div class="win-stats" id="win-stats"></div>
+    <div class="win-btns">
+      <button class="btn-primary" id="win-again" style="background:#b8972a">Play Again</button>
+      <button class="btn-outline" id="win-menu">Main Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home">
+  <div class="hero">
+    <div class="hero-stars">
+      <span class="hero-star">★</span>
+      <span class="hero-star big">★</span>
+      <span class="hero-star">★</span>
+      <span class="hero-star big">★</span>
+      <span class="hero-star">★</span>
+    </div>
+    <div class="hero-title">STAR BATTLE</div>
+    <div class="hero-sub">
+      Place 2 stars in every row, column &amp; region<br/>
+      Stars may not touch — not even diagonally
+    </div>
+  </div>
+
+  <div class="overall-stats">
+    <div class="stat-item">
+      <span class="stat-num" id="total-played">0</span>
+      <span class="stat-lbl">Played</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" id="total-completed">0</span>
+      <span class="stat-lbl">Solved</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" id="total-rate">—</span>
+      <span class="stat-lbl">Rate</span>
+    </div>
+  </div>
+
+  <div id="resume-banner" style="display:none;background:#fff;border:1.5px solid #111;padding:14px 18px;margin-bottom:16px;"></div>
+  <div class="diff-cards" id="diff-cards"></div>
+  <div class="home-footer">
+    Tap once → dot marker &nbsp;·&nbsp; tap again → place star &nbsp;·&nbsp; tap again → clear<br/>
+    Works offline · progress saved automatically
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game">
+  <div id="nav">
+    <button class="nav-back" id="btn-back">← Menu</button>
+    <div class="nav-timer" id="timer">00:00</div>
+    <button class="nav-new" id="btn-new">New</button>
+  </div>
+  <div class="game-meta">
+    <span class="meta-badge" id="meta-diff"></span>
+    <span class="meta-badge meta-skip" id="meta-skip" style="display:none">↩ Skipped</span>
+  </div>
+  <div id="grid-wrap"><canvas id="grid-canvas"></canvas></div>
+  <div class="progress-row">
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="progress-text" id="progress-text">0 / 20</div>
+  </div>
+  <button class="btn-skip" id="btn-skip">Skip — revisit later</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════════
+var N = 10;
+var STARS_PER = 2;
+
+var DIFFS = {
+  easy:   { label:'Easy',   color:'#4db88c', dark:'#1a6644', regionStyle:'compact'   },
+  medium: { label:'Medium', color:'#6aaddf', dark:'#1a5480', regionStyle:'normal'    },
+  hard:   { label:'Hard',   color:'#c07ad0', dark:'#602880', regionStyle:'irregular' },
+  expert: { label:'Expert', color:'#e06070', dark:'#801828', regionStyle:'chaotic'   }
+};
+
+// B&W: alternating white/light-gray fills, all-black borders, black stars
+var REGION_PALETTE = [
+  '#ffffff','#ebebeb','#ffffff','#ebebeb','#ffffff',
+  '#ebebeb','#ffffff','#ebebeb','#ffffff','#ebebeb'
+];
+var REGION_BORDER = [
+  '#111111','#111111','#111111','#111111','#111111',
+  '#111111','#111111','#111111','#111111','#111111'
+];
+var STAR_COLOR = [
+  '#111111','#111111','#111111','#111111','#111111',
+  '#111111','#111111','#111111','#111111','#111111'
+];
+
+var EMPTY = 0, STAR = 1, DOT = 2;
+
+// ═══════════════════════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════════════════════
+var DB = {
+  get: function(key) {
+    try { var v = localStorage.getItem('sb_' + key); return v ? JSON.parse(v) : null; }
+    catch(e) { return null; }
+  },
+  set: function(key, val) {
+    try { localStorage.setItem('sb_' + key, JSON.stringify(val)); } catch(e) {}
+  }
+};
+
+function loadStats() {
+  var s = DB.get('stats');
+  if (s) return s;
+  var d = {};
+  var keys = Object.keys(DIFFS);
+  for (var i = 0; i < keys.length; i++) d[keys[i]] = { c: 0, p: 0 };
+  return d;
+}
+
+function loadSkipped() {
+  var s = DB.get('skip');
+  if (s) return s;
+  var d = {};
+  var keys = Object.keys(DIFFS);
+  for (var i = 0; i < keys.length; i++) d[keys[i]] = [];
+  return d;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PUZZLE ENGINE
+// ═══════════════════════════════════════════════════════════════════
+
+function shuffle(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.random() * (i + 1) | 0;
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  }
+  return arr;
+}
+
+// Step 1: Place 20 stars — 2 per row, 2 per col, no two touching (8-dir)
+// ── Step 1: Place 20 valid stars ─────────────────────────────────
+function makeSolution() {
+  var colCount = new Uint8Array(N);
+  var blocked  = new Uint8Array(N * N);
+  var stars    = [];
+  function addBlock(r, c, d) {
+    var dr, dc, nr, nc;
+    for (dr = -1; dr <= 1; dr++) for (dc = -1; dc <= 1; dc++) {
+      if (!dr && !dc) continue; nr = r+dr; nc = c+dc;
+      if (nr >= 0 && nr < N && nc >= 0 && nc < N) blocked[nr*N+nc] += d;
+    }
+  }
+  function bt(row) {
+    if (row === N) return true;
+    var avail = [], c, i, j, c1, c2;
+    for (c = 0; c < N; c++)
+      if (!blocked[row*N+c] && colCount[c] < STARS_PER) avail.push(c);
+    shuffle(avail);
+    for (i = 0; i < avail.length; i++) {
+      c1 = avail[i]; colCount[c1]++; addBlock(row, c1, 1); stars.push({r:row, c:c1});
+      for (j = i+1; j < avail.length; j++) {
+        c2 = avail[j];
+        if (Math.abs(c1-c2) <= 1) continue;
+        if (blocked[row*N+c2]) continue;
+        if (colCount[c2] >= STARS_PER) continue;
+        colCount[c2]++; addBlock(row, c2, 1); stars.push({r:row, c:c2});
+        if (bt(row+1)) return true;
+        stars.pop(); colCount[c2]--; addBlock(row, c2, -1);
+      }
+      stars.pop(); colCount[c1]--; addBlock(row, c1, -1);
+    }
+    return false;
+  }
+  return bt(0) ? stars : null;
+}
+
+// ── Step 2: Always pair by nearest neighbour ──────────────────────
+// Nearest pairing = short connections = paths rarely blocked = guaranteed connectivity.
+// Difficulty comes from BFS-growth jitter (region SHAPE), not pair distance.
+function pairByNearest(stars) {
+  var pool = stars.slice(), pairs = [], bi, i, base, bestIdx, bestDist, d;
+  while (pool.length >= 2) {
+    bi = Math.random() * pool.length | 0;
+    base = pool.splice(bi, 1)[0];
+    bestIdx = 0; bestDist = Infinity;
+    for (i = 0; i < pool.length; i++) {
+      d = Math.abs(base.r-pool[i].r) + Math.abs(base.c-pool[i].c);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    }
+    pairs.push([base, pool.splice(bestIdx, 1)[0]]);
+  }
+  return pairs;
+}
+
+// ── Step 3: Build connected regions ──────────────────────────────
+// Phase 1 (connectivity guarantee): BFS from each star A to find the shortest
+//   path to its partner B through unclaimed cells. Seed the path into the region.
+//   Pairs with shorter distances are processed first (less chance of blocking).
+// Phase 2 (fill): BFS-grow all regions simultaneously with jitter for shape variety.
+function buildRegions(pairs, style) {
+  var i, d, r, c, reg, nr, nc, pick, item, fr, fc, freg;
+  var DR = [-1, 1, 0, 0], DC = [0, 0, -1, 1];
+  var grid = [];
+  for (i = 0; i < N*N; i++) grid.push(-1);
+
+  // Seed each star
+  for (reg = 0; reg < N; reg++) {
+    grid[pairs[reg][0].r*N + pairs[reg][0].c] = reg;
+    grid[pairs[reg][1].r*N + pairs[reg][1].c] = reg;
+  }
+
+  // Phase 1: BFS path-seed. Sort pairs by distance ascending (short first).
+  var regOrder = [];
+  for (reg = 0; reg < N; reg++) {
+    regOrder.push({ reg: reg, dist: Math.abs(pairs[reg][0].r-pairs[reg][1].r) + Math.abs(pairs[reg][0].c-pairs[reg][1].c) });
+  }
+  regOrder.sort(function(a, b) { return a.dist - b.dist; });
+
+  for (var ri = 0; ri < regOrder.length; ri++) {
+    reg = regOrder[ri].reg;
+    var a = pairs[reg][0], b = pairs[reg][1];
+    // BFS from a to b through unclaimed or own cells
+    var vis = new Uint8Array(N*N), prev = new Int32Array(N*N);
+    for (i = 0; i < N*N; i++) prev[i] = -1;
+    var q = [a.r*N+a.c]; vis[a.r*N+a.c] = 1; var h = 0;
+    while (h < q.length) {
+      var ci = q[h++];
+      if (ci === b.r*N+b.c) break;
+      var r2 = ci/N|0, c2 = ci%N;
+      for (d = 0; d < 4; d++) {
+        nr = r2+DR[d]; nc = c2+DC[d]; var ni = nr*N+nc;
+        if (nr >= 0 && nr < N && nc >= 0 && nc < N && !vis[ni] && (grid[ni] === -1 || grid[ni] === reg)) {
+          vis[ni] = 1; prev[ni] = ci; q.push(ni);
+        }
+      }
+    }
+    // Trace path back from b to a and seed
+    var ci2 = b.r*N+b.c;
+    while (ci2 !== -1 && ci2 !== a.r*N+a.c) {
+      if (grid[ci2] === -1) grid[ci2] = reg;
+      ci2 = prev[ci2];
+    }
+  }
+
+  // Phase 2: BFS-grow frontier to fill remaining cells
+  var frontier = [];
+  for (r = 0; r < N; r++) for (c = 0; c < N; c++) if (grid[r*N+c] >= 0)
+    for (d = 0; d < 4; d++) {
+      nr = r+DR[d]; nc = c+DC[d];
+      if (nr >= 0 && nr < N && nc >= 0 && nc < N && grid[nr*N+nc] === -1)
+        frontier.push([nr, nc, grid[r*N+c]]);
+    }
+  shuffle(frontier);
+
+  // jitter: 0=compact blobs, high=irregular interleaved shapes
+  var jitterMap = { compact: 0.0, normal: 0.4, irregular: 0.72, chaotic: 0.93 };
+  var jitter = jitterMap[style] !== undefined ? jitterMap[style] : 0.4;
+
+  while (frontier.length > 0) {
+    pick = (jitter > 0 && Math.random() < jitter) ? (Math.random() * frontier.length | 0) : 0;
+    item = frontier.splice(pick, 1)[0];
+    fr = item[0]; fc = item[1]; freg = item[2];
+    if (grid[fr*N+fc] !== -1) continue;
+    grid[fr*N+fc] = freg;
+    for (d = 0; d < 4; d++) {
+      nr = fr+DR[d]; nc = fc+DC[d];
+      if (nr >= 0 && nr < N && nc >= 0 && nc < N && grid[nr*N+nc] === -1)
+        frontier.push([nr, nc, freg]);
+    }
+  }
+
+  // Safety: absorb any remaining -1 cells (should never trigger)
+  var changed = true;
+  while (changed) {
+    changed = false;
+    for (i = 0; i < N*N; i++) {
+      if (grid[i] !== -1) continue;
+      r = i/N|0; c = i%N;
+      for (d = 0; d < 4; d++) {
+        nr = r+DR[d]; nc = c+DC[d];
+        if (nr >= 0 && nr < N && nc >= 0 && nc < N && grid[nr*N+nc] >= 0) {
+          grid[i] = grid[nr*N+nc]; changed = true; break;
+        }
+      }
+    }
+  }
+
+  var grid2d = [], row;
+  for (r = 0; r < N; r++) { row = []; for (c = 0; c < N; c++) row.push(grid[r*N+c]); grid2d.push(row); }
+  return grid2d;
+}
+
+// ── Validator: all N regions are 4-connected ─────────────────────
+function regionsConnected(regionGrid) {
+  var reg, r, c, cells, inReg, vis, q, h, ci, nr, nc, ni, d;
+  var DR = [-1, 1, 0, 0], DC = [0, 0, -1, 1];
+  for (reg = 0; reg < N; reg++) {
+    cells = [];
+    for (r = 0; r < N; r++) for (c = 0; c < N; c++) if (regionGrid[r][c] === reg) cells.push(r*N+c);
+    if (!cells.length) return false;
+    inReg = new Uint8Array(N*N); vis = new Uint8Array(N*N);
+    for (var i = 0; i < cells.length; i++) inReg[cells[i]] = 1;
+    q = [cells[0]]; vis[cells[0]] = 1; h = 0;
+    while (h < q.length) {
+      ci = q[h++]; r = ci/N|0; c = ci%N;
+      for (d = 0; d < 4; d++) {
+        nr = r+DR[d]; nc = c+DC[d]; ni = nr*N+nc;
+        if (nr >= 0 && nr < N && nc >= 0 && nc < N && inReg[ni] && !vis[ni]) { vis[ni] = 1; q.push(ni); }
+      }
+    }
+    if (q.length !== cells.length) return false;
+  }
+  return true;
+}
+
+// ── Validator: each region can hold 2 non-touching stars ─────────
+function regionsSolvable(regionGrid) {
+  var reg, r, c, cells, i, j, dr, dc;
+  for (reg = 0; reg < N; reg++) {
+    cells = [];
+    for (r = 0; r < N; r++) for (c = 0; c < N; c++) if (regionGrid[r][c] === reg) cells.push([r, c]);
+    if (cells.length < 3) return false;
+    var ok = false;
+    for (i = 0; i < cells.length && !ok; i++) for (j = i+1; j < cells.length && !ok; j++) {
+      dr = Math.abs(cells[i][0]-cells[j][0]); dc = Math.abs(cells[i][1]-cells[j][1]);
+      if (dr > 1 || dc > 1) ok = true;
+    }
+    if (!ok) return false;
+  }
+  return true;
+}
+
+// ── Main generator ────────────────────────────────────────────────
+function generatePuzzle(diff) {
+  var style = DIFFS[diff].regionStyle;
+  var attempt, stars, pairs, regionGrid, regSet, regCount, si, ri, bad, r, c;
+
+  for (attempt = 0; attempt < 200; attempt++) {
+    stars = makeSolution();
+    if (!stars) continue;
+
+    pairs      = pairByNearest(stars);
+    regionGrid = buildRegions(pairs, style);
+
+    // Exactly N regions, no stray -1 cells
+    regSet = {};
+    for (r = 0; r < N; r++) for (c = 0; c < N; c++) regSet[regionGrid[r][c]] = 1;
+    if (Object.keys(regSet).length !== N) continue;
+
+    // Exactly STARS_PER stars per region
+    regCount = new Uint8Array(N);
+    for (si = 0; si < stars.length; si++) regCount[regionGrid[stars[si].r][stars[si].c]]++;
+    bad = false;
+    for (ri = 0; ri < N; ri++) if (regCount[ri] !== STARS_PER) { bad = true; break; }
+    if (bad) continue;
+
+    // All regions are 4-connected (the critical check)
+    if (!regionsConnected(regionGrid)) continue;
+
+    // All regions can geometrically hold 2 non-touching stars
+    if (!regionsSolvable(regionGrid)) continue;
+
+    return { regionGrid: regionGrid, stars: stars, diff: diff, n: N };
+  }
+
+  return generatePuzzle(diff); // safety fallback
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VALIDATION
+// ═══════════════════════════════════════════════════════════════════
+function validateBoard(board, regionGrid) {
+  var placed = [];
+  for (var r = 0; r < N; r++)
+    for (var c = 0; c < N; c++)
+      if (board[r][c] === STAR) placed.push({ r: r, c: c });
+
+  var errors = {};
+  var byRow = {}, byCol = {}, byReg = {};
+
+  for (var i = 0; i < placed.length; i++) {
+    var s = placed[i];
+    var key = s.r + ',' + s.c;
+    var reg = regionGrid[s.r][s.c];
+
+    if (!byRow[s.r]) byRow[s.r] = [];
+    if (!byCol[s.c]) byCol[s.c] = [];
+    if (!byReg[reg])  byReg[reg]  = [];
+
+    byRow[s.r].push(key);
+    byCol[s.c].push(key);
+    byReg[reg].push(key);
+  }
+
+  function flagGroup(group) {
+    if (group.length > STARS_PER)
+      for (var g = 0; g < group.length; g++) errors[group[g]] = 1;
+  }
+  var rowVals = Object.keys(byRow);
+  for (var i = 0; i < rowVals.length; i++) flagGroup(byRow[rowVals[i]]);
+  var colVals = Object.keys(byCol);
+  for (var i = 0; i < colVals.length; i++) flagGroup(byCol[colVals[i]]);
+  var regVals = Object.keys(byReg);
+  for (var i = 0; i < regVals.length; i++) flagGroup(byReg[regVals[i]]);
+
+  // Adjacency
+  for (var i = 0; i < placed.length; i++) {
+    for (var j = i + 1; j < placed.length; j++) {
+      if (Math.abs(placed[i].r - placed[j].r) <= 1 &&
+          Math.abs(placed[i].c - placed[j].c) <= 1) {
+        errors[placed[i].r + ',' + placed[i].c] = 1;
+        errors[placed[j].r + ',' + placed[j].c] = 1;
+      }
+    }
+  }
+
+  var errCount  = Object.keys(errors).length;
+  var rowFull   = Object.keys(byRow).length === N;
+  var colFull   = Object.keys(byCol).length === N;
+  var regFull   = Object.keys(byReg).length === N;
+  var rowsOk    = true;
+  for (var i = 0; i < rowVals.length; i++) if (byRow[rowVals[i]].length !== STARS_PER) { rowsOk = false; break; }
+  var colsOk    = true;
+  for (var i = 0; i < colVals.length; i++) if (byCol[colVals[i]].length !== STARS_PER) { colsOk = false; break; }
+  var regsOk    = true;
+  for (var i = 0; i < regVals.length; i++) if (byReg[regVals[i]].length !== STARS_PER) { regsOk = false; break; }
+
+  var solved = errCount === 0 && placed.length === N * STARS_PER &&
+               rowFull && colFull && regFull && rowsOk && colsOk && regsOk;
+
+  return { errors: errors, solved: solved };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CANVAS RENDERER
+// ═══════════════════════════════════════════════════════════════════
+function drawStar5(ctx, cx, cy, outerR, innerR) {
+  ctx.beginPath();
+  for (var i = 0; i < 10; i++) {
+    var angle = (i * Math.PI / 5) - Math.PI / 2;
+    var rr = (i % 2 === 0) ? outerR : innerR;
+    var x = cx + rr * Math.cos(angle);
+    var y = cy + rr * Math.sin(angle);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+}
+
+function drawGrid(canvas, puzzle, board, errors) {
+  var regionGrid = puzzle.regionGrid;
+  var dpr  = window.devicePixelRatio || 1;
+  var wrapW = Math.min(window.innerWidth - 16, 460);
+  var cellPx = Math.floor(wrapW / N);
+  var totalPx = cellPx * N;
+
+  canvas.style.width  = totalPx + 'px';
+  canvas.style.height = totalPx + 'px';
+  canvas.width  = totalPx * dpr;
+  canvas.height = totalPx * dpr;
+  document.getElementById('grid-wrap').style.width  = totalPx + 'px';
+  document.getElementById('grid-wrap').style.height = totalPx + 'px';
+
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // Fill all cells white (or light-gray for odd regions), error = light red
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, totalPx, totalPx);
+  for (var r = 0; r < N; r++) {
+    for (var c = 0; c < N; c++) {
+      var reg = regionGrid[r][c];
+      var x = c * cellPx, y = r * cellPx;
+      var isErr = !!errors[r + ',' + c];
+      if (isErr) {
+        ctx.fillStyle = '#ffe0e0';
+      } else {
+        ctx.fillStyle = REGION_PALETTE[reg % REGION_PALETTE.length];
+      }
+      ctx.fillRect(x, y, cellPx, cellPx);
+    }
+  }
+
+  // Thin hairline grid lines (cell divisions within same region)
+  ctx.strokeStyle = '#cccccc';
+  ctx.lineWidth = 0.5;
+  for (var r = 0; r < N; r++) {
+    for (var c = 0; c < N; c++) {
+      var x = c * cellPx, y = r * cellPx;
+      ctx.strokeRect(x + 0.25, y + 0.25, cellPx - 0.5, cellPx - 0.5);
+    }
+  }
+
+  // Thick black region borders (only draw the boundary between different regions)
+  ctx.strokeStyle = '#111111';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'square';
+  for (var r = 0; r < N; r++) {
+    for (var c = 0; c < N; c++) {
+      var x = c * cellPx, y = r * cellPx;
+      // Right border
+      if (c + 1 < N && regionGrid[r][c + 1] !== regionGrid[r][c]) {
+        ctx.beginPath(); ctx.moveTo(x + cellPx, y); ctx.lineTo(x + cellPx, y + cellPx); ctx.stroke();
+      }
+      // Bottom border
+      if (r + 1 < N && regionGrid[r + 1][c] !== regionGrid[r][c]) {
+        ctx.beginPath(); ctx.moveTo(x, y + cellPx); ctx.lineTo(x + cellPx, y + cellPx); ctx.stroke();
+      }
+    }
+  }
+
+  // Outer border (always thick black)
+  ctx.strokeStyle = '#111111';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(1.5, 1.5, totalPx - 3, totalPx - 3);
+
+  // Stars and dots
+  for (var r = 0; r < N; r++) {
+    for (var c = 0; c < N; c++) {
+      var state  = board[r][c];
+      var reg    = regionGrid[r][c];
+      var cx2    = c * cellPx + cellPx / 2;
+      var cy2    = r * cellPx + cellPx / 2;
+      var isErr2 = !!errors[r + ',' + c];
+
+      if (state === STAR) {
+        var sz = cellPx * 0.36;
+        ctx.save();
+        drawStar5(ctx, cx2, cy2, sz, sz * 0.42);
+        ctx.fillStyle = isErr2 ? '#cc0000' : '#111111';
+        ctx.fill();
+        ctx.restore();
+      } else if (state === DOT) {
+        ctx.beginPath();
+        ctx.arc(cx2, cy2, cellPx * 0.12, 0, Math.PI * 2);
+        ctx.fillStyle = '#aaaaaa';
+        ctx.fill();
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════════════════════════════
+var stats   = loadStats();
+var skipped = loadSkipped();
+var appState = {
+  screen: 'home',
+  puzzle: null,
+  board:  null,
+  errors: {},
+  solved: false,
+  secs:   0,
+  timerID: null,
+  curDiff: null,
+  fromSkip: false
+};
+
+function saveStats()   { DB.set('stats', stats);   }
+function saveSkipped() { DB.set('skip',  skipped);  }
+
+function saveActiveGame() {
+  if (!appState.puzzle || appState.solved) { DB.set('active', null); return; }
+  DB.set('active', {
+    puzzle:   appState.puzzle,
+    board:    appState.board,
+    secs:     appState.secs,
+    diff:     appState.curDiff,
+    fromSkip: appState.fromSkip
+  });
+}
+
+function loadActiveGame() {
+  return DB.get('active');
+}
+
+function clearActiveGame() {
+  DB.set('active', null);
+}
+
+function fmt(s) {
+  var m = Math.floor(s / 60);
+  var sec = s % 60;
+  return (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════════════════════
+function startTimer() {
+  stopTimer();
+  appState.secs = 0;
+  appState.timerID = setInterval(function() {
+    appState.secs++;
+    document.getElementById('timer').textContent = fmt(appState.secs);
+  }, 1000);
+}
+function stopTimer() {
+  if (appState.timerID) { clearInterval(appState.timerID); appState.timerID = null; }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SCREENS
+// ═══════════════════════════════════════════════════════════════════
+function showHome() {
+  stopTimer();
+  if (appState.screen === 'game' && appState.puzzle && !appState.solved) {
+    saveActiveGame();
+  }
+  appState.screen = 'home';
+  document.getElementById('home').style.display = 'block';
+  document.getElementById('game').style.display = 'none';
+  renderHome();
+}
+
+function showGame() {
+  appState.screen = 'game';
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('game').style.display = 'flex';
+}
+
+function renderHome() {
+  var totalP = 0, totalC = 0;
+  var keys = Object.keys(DIFFS);
+  for (var i = 0; i < keys.length; i++) {
+    totalP += stats[keys[i]].p;
+    totalC += stats[keys[i]].c;
+  }
+  document.getElementById('total-played').textContent    = totalP;
+  document.getElementById('total-completed').textContent = totalC;
+  document.getElementById('total-rate').textContent      = totalP > 0 ? Math.round(totalC / totalP * 100) + '%' : '\u2014';
+
+  var container = document.getElementById('diff-cards');
+  container.innerHTML = '';
+
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    var cfg = DIFFS[key];
+    var st  = stats[key]  || { c: 0, p: 0 };
+    var sk  = skipped[key] || [];
+    var rate = st.p > 0 ? Math.round(st.c / st.p * 100) : null;
+
+    var card = document.createElement('div');
+    card.className = 'diff-card';
+    card.style.borderColor = cfg.color + '50';
+
+    var skipBadgeHtml = sk.length > 0
+      ? '<span class="skip-badge">' + sk.length + ' skipped</span>'
+      : '';
+
+    var statsHtml = st.p > 0
+      ? '<div class="diff-nums"><span class="diff-big">' + st.c + '</span>'
+        + '<span class="diff-of">&nbsp;/ ' + st.p + ' solved</span></div>'
+        + '<div class="rate-chip" style="border-color:' + cfg.color + ';color:' + cfg.color + '">' + rate + '%</div>'
+      : '<span class="no-games">No games yet</span>';
+
+    var skipBtnHtml = sk.length > 0
+      ? '<button class="btn-outline" data-diff="' + key + '" data-action="skip">&#8617; Play Skipped</button>'
+      : '';
+
+    card.innerHTML =
+      '<div class="diff-top">'
+      + '<div class="diff-left">'
+      + '<div class="diff-dot" style="background:' + cfg.color + '"></div>'
+      + '<span class="diff-name">' + cfg.label + '</span>'
+      + '<span class="diff-tag">10&#215;10</span>'
+      + '</div>' + skipBadgeHtml + '</div>'
+      + '<div class="diff-stats">' + statsHtml + '</div>'
+      + '<div class="diff-btns">'
+      + '<button class="btn-primary" style="background:' + cfg.dark + '" data-diff="' + key + '" data-action="new">New Game</button>'
+      + skipBtnHtml
+      + '</div>';
+
+    container.appendChild(card);
+  }
+
+  var btns = container.querySelectorAll('[data-action]');
+  for (var b = 0; b < btns.length; b++) {
+    btns[b].addEventListener('click', (function(btn) {
+      return function() {
+        var diff   = btn.getAttribute('data-diff');
+        var action = btn.getAttribute('data-action');
+        if (action === 'new')  startNew(diff);
+        if (action === 'skip') startSkipped(diff);
+      };
+    })(btns[b]));
+  }
+
+  // Resume banner: show if there's a saved in-progress game
+  var resumeEl = document.getElementById('resume-banner');
+  var saved = loadActiveGame();
+  if (saved && saved.puzzle && saved.diff) {
+    var diffCfg = DIFFS[saved.diff] || {};
+    resumeEl.style.display = 'block';
+    resumeEl.innerHTML =
+      '<div style="font-size:12px;color:#888;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">In progress</div>'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;">'
+      + '<span style="font-size:16px;color:#111">' + (diffCfg.label || saved.diff) + ' &nbsp;&#183;&nbsp; ' + fmt(saved.secs) + '</span>'
+      + '<button id="btn-resume" style="background:#111;color:#fff;border:none;padding:9px 22px;font-family:inherit;font-size:13px;letter-spacing:1px;cursor:pointer;">Continue</button>'
+      + '</div>';
+    document.getElementById('btn-resume').addEventListener('click', function() {
+      var s = loadActiveGame();
+      if (s) resumeGame(s);
+    });
+  } else {
+    resumeEl.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GAME LAUNCH
+// ═══════════════════════════════════════════════════════════════════
+function resumeGame(saved) {
+  appState.puzzle   = saved.puzzle;
+  appState.board    = saved.board;
+  appState.secs     = saved.secs;
+  appState.curDiff  = saved.diff;
+  appState.fromSkip = saved.fromSkip;
+  appState.errors   = {};
+  appState.solved   = false;
+
+  document.getElementById('meta-diff').textContent   = DIFFS[saved.diff].label + ' \u00b7 10\u00d710';
+  document.getElementById('meta-skip').style.display = saved.fromSkip ? 'inline' : 'none';
+  document.getElementById('win-overlay').classList.remove('show');
+  document.getElementById('btn-skip').style.display  = 'inline-block';
+  document.getElementById('timer').textContent       = fmt(saved.secs);
+
+  // Resume timer from saved time
+  stopTimer();
+  appState.timerID = setInterval(function() {
+    appState.secs++;
+    document.getElementById('timer').textContent = fmt(appState.secs);
+  }, 1000);
+
+  showGame();
+  render();
+}
+
+function launchPuzzle(puzzle, diff, fromSkip) {
+  appState.puzzle   = puzzle;
+  appState.board    = [];
+  for (var r = 0; r < N; r++) {
+    var row = [];
+    for (var c = 0; c < N; c++) row.push(EMPTY);
+    appState.board.push(row);
+  }
+  appState.errors   = {};
+  appState.solved   = false;
+  appState.curDiff  = diff;
+  appState.fromSkip = fromSkip;
+
+  document.getElementById('meta-diff').textContent        = DIFFS[diff].label + ' \u00b7 10\u00d710';
+  document.getElementById('meta-skip').style.display      = fromSkip ? 'inline' : 'none';
+  document.getElementById('win-overlay').classList.remove('show');
+  document.getElementById('btn-skip').style.display       = 'inline-block';
+
+  showGame();
+  startTimer();
+  render();
+}
+
+function startNew(diff) {
+  clearActiveGame();
+  if (!stats[diff]) stats[diff] = { c: 0, p: 0 };
+  stats[diff].p++;
+  saveStats();
+  showLoading();
+  setTimeout(function() {
+    var puzzle = generatePuzzle(diff);
+    hideLoading();
+    launchPuzzle(puzzle, diff, false);
+  }, 60);
+}
+
+function startSkipped(diff) {
+  var q = skipped[diff] || [];
+  if (!q.length) return;
+  launchPuzzle(q[0], diff, true);
+}
+
+function showLoading() { document.getElementById('loading-overlay').classList.add('show'); }
+function hideLoading() { document.getElementById('loading-overlay').classList.remove('show'); }
+
+// ═══════════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════════
+function render() {
+  if (!appState.puzzle) return;
+  drawGrid(
+    document.getElementById('grid-canvas'),
+    appState.puzzle,
+    appState.board,
+    appState.errors
+  );
+  var placed = 0;
+  for (var r = 0; r < N; r++)
+    for (var c = 0; c < N; c++)
+      if (appState.board[r][c] === STAR) placed++;
+  var total = N * STARS_PER;
+  document.getElementById('progress-fill').style.width = (placed / total * 100) + '%';
+  document.getElementById('progress-text').textContent = placed + ' / ' + total;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INPUT
+// ═══════════════════════════════════════════════════════════════════
+function cellFromXY(clientX, clientY) {
+  var canvas = document.getElementById('grid-canvas');
+  var rect   = canvas.getBoundingClientRect();
+  var x = clientX - rect.left;
+  var y = clientY - rect.top;
+  var cellPx = rect.width / N;
+  var c = Math.floor(x / cellPx);
+  var r = Math.floor(y / cellPx);
+  if (r >= 0 && r < N && c >= 0 && c < N) return { r: r, c: c };
+  return null;
+}
+
+var touchMoved = false;
+
+function setupGridInput() {
+  var canvas = document.getElementById('grid-canvas');
+
+  canvas.addEventListener('touchstart', function() { touchMoved = false; }, { passive: true });
+  canvas.addEventListener('touchmove',  function() { touchMoved = true;  }, { passive: true });
+  canvas.addEventListener('touchend', function(e) {
+    if (touchMoved) return;
+    e.preventDefault();
+    var t = e.changedTouches[0];
+    var cell = cellFromXY(t.clientX, t.clientY);
+    if (cell) handleCell(cell.r, cell.c);
+  }, { passive: false });
+
+  canvas.addEventListener('click', function(e) {
+    var cell = cellFromXY(e.clientX, e.clientY);
+    if (cell) handleCell(cell.r, cell.c);
+  });
+}
+
+function handleCell(r, c) {
+  if (!appState.board || appState.solved) return;
+  var _next = [DOT, EMPTY, STAR]; // EMPTY→DOT, DOT→STAR, STAR→EMPTY
+  appState.board[r][c] = _next[appState.board[r][c]];
+
+  var result = validateBoard(appState.board, appState.puzzle.regionGrid);
+  appState.errors = result.errors;
+  render();
+
+  if (result.solved) {
+    appState.solved = true;
+    stopTimer();
+    stats[appState.curDiff].c++;
+    saveStats();
+    clearActiveGame();
+    if (appState.fromSkip) {
+      skipped[appState.curDiff] = skipped[appState.curDiff].slice(1);
+      saveSkipped();
+    }
+    setTimeout(showWin, 400);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// WIN SCREEN
+// ═══════════════════════════════════════════════════════════════════
+function showWin() {
+  document.getElementById('win-time').textContent = fmt(appState.secs);
+  document.getElementById('win-diff').textContent = DIFFS[appState.curDiff].label + ' \u00b7 10\u00d710';
+  document.getElementById('btn-skip').style.display = 'none';
+
+  var ws = document.getElementById('win-stats');
+  var winHtml = '';
+  var keys = Object.keys(DIFFS);
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i], cfg = DIFFS[key];
+    var st  = stats[key] || { c: 0, p: 0 };
+    var rate = st.p > 0 ? Math.round(st.c / st.p * 100) + '%' : '\u2014';
+    winHtml +=
+      '<div class="ws-col">'
+      + '<div class="ws-dot" style="background:' + cfg.color + '"></div>'
+      + '<div class="ws-lbl">' + cfg.label + '</div>'
+      + '<div class="ws-rate" style="color:' + cfg.color + '">' + rate + '</div>'
+      + '<div class="ws-sub">' + st.c + '/' + st.p + '</div>'
+      + '</div>';
+  }
+  ws.innerHTML = winHtml;
+
+  document.getElementById('win-again').style.background = DIFFS[appState.curDiff].dark;
+  document.getElementById('win-again').onclick = function() {
+    document.getElementById('win-overlay').classList.remove('show');
+    startNew(appState.curDiff);
+  };
+
+  document.getElementById('win-overlay').classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SKIP
+// ═══════════════════════════════════════════════════════════════════
+function doSkip() {
+  stopTimer();
+  clearActiveGame();
+  var diff = appState.curDiff;
+  if (!appState.fromSkip) {
+    var arr = skipped[diff] ? skipped[diff].slice() : [];
+    arr.push(appState.puzzle);
+    skipped[diff] = arr;
+  } else {
+    var q = skipped[diff] ? skipped[diff].slice() : [];
+    q.push(q.shift());
+    skipped[diff] = q;
+  }
+  saveSkipped();
+  showHome();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// WIRING
+// ═══════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  setupGridInput();
+
+  document.getElementById('btn-back').addEventListener('click', function() {
+    stopTimer();
+    showHome();
+  });
+  document.getElementById('btn-new').addEventListener('click', function() {
+    if (appState.curDiff) startNew(appState.curDiff);
+  });
+  document.getElementById('btn-skip').addEventListener('click', doSkip);
+  document.getElementById('win-menu').addEventListener('click', function() {
+    document.getElementById('win-overlay').classList.remove('show');
+    showHome();
+  });
+
+  document.addEventListener('touchmove', function(e) {
+    if (appState.screen === 'game') e.preventDefault();
+  }, { passive: false });
+
+  showHome();
+});
+
+window.addEventListener('resize', function() {
+  if (appState.screen === 'game') render();
+});
+
+</script>
+</body>
+</html>
