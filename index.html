@@ -193,6 +193,22 @@
     transition: color .15s, border-color .15s;
   }
   .btn-skip:hover { color: var(--text); border-color: var(--muted); }
+  .game-bottom-row {
+    display: flex; gap: 12px; align-items: center; margin-top: 16px;
+  }
+  .btn-hint {
+    padding: 11px 22px;
+    background: none; border: 1.5px solid #111111;
+    border-radius: 0px; color: #111111; font-size: 13px;
+    cursor: pointer; font-family: inherit; letter-spacing: 1px;
+    font-weight: bold; text-transform: uppercase;
+    transition: background .15s, color .15s;
+  }
+  .btn-hint:hover { background: #111111; color: #ffffff; }
+  .btn-hint:active { transform: scale(0.97); }
+  #hint-result {
+    font-size: 13px; color: #555; letter-spacing: 0.5px; min-height: 18px;
+  }
 
   /* ── WIN OVERLAY ── */
   #win-overlay {
@@ -316,7 +332,11 @@
     <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
     <div class="progress-text" id="progress-text">0 / 20</div>
   </div>
-  <button class="btn-skip" id="btn-skip">Skip — revisit later</button>
+  <div class="game-bottom-row">
+    <button class="btn-skip" id="btn-skip">Skip — revisit later</button>
+    <button class="btn-hint" id="btn-hint">Hint</button>
+  </div>
+  <div id="hint-result"></div>
 </div>
 
 <script>
@@ -335,8 +355,8 @@ var DIFFS = {
 
 // B&W: alternating white/light-gray fills, all-black borders, black stars
 var REGION_PALETTE = [
-  '#ffffff','#ebebeb','#ffffff','#ebebeb','#ffffff',
-  '#ebebeb','#ffffff','#ebebeb','#ffffff','#ebebeb'
+  '#ffffff','#ffffff','#ffffff','#ffffff','#ffffff',
+  '#ffffff','#ffffff','#ffffff','#ffffff','#ffffff'
 ];
 var REGION_BORDER = [
   '#111111','#111111','#111111','#111111','#111111',
@@ -787,7 +807,7 @@ function drawGrid(canvas, puzzle, board, errors) {
       } else if (state === DOT) {
         ctx.beginPath();
         ctx.arc(cx2, cy2, cellPx * 0.12, 0, Math.PI * 2);
-        ctx.fillStyle = '#aaaaaa';
+        ctx.fillStyle = '#444444';
         ctx.fill();
       }
     }
@@ -803,6 +823,7 @@ var appState = {
   screen: 'home',
   puzzle: null,
   board:  null,
+  autoDots: null,
   errors: {},
   solved: false,
   secs:   0,
@@ -819,6 +840,7 @@ function saveActiveGame() {
   DB.set('active', {
     puzzle:   appState.puzzle,
     board:    appState.board,
+    autoDots: appState.autoDots,
     secs:     appState.secs,
     diff:     appState.curDiff,
     fromSkip: appState.fromSkip
@@ -968,6 +990,11 @@ function renderHome() {
 function resumeGame(saved) {
   appState.puzzle   = saved.puzzle;
   appState.board    = saved.board;
+  appState.autoDots = saved.autoDots || (function() {
+    var ad = [];
+    for (var r = 0; r < N; r++) { var row = []; for (var c = 0; c < N; c++) row.push(false); ad.push(row); }
+    return ad;
+  })();
   appState.secs     = saved.secs;
   appState.curDiff  = saved.diff;
   appState.fromSkip = saved.fromSkip;
@@ -999,6 +1026,12 @@ function launchPuzzle(puzzle, diff, fromSkip) {
     for (var c = 0; c < N; c++) row.push(EMPTY);
     appState.board.push(row);
   }
+  appState.autoDots = [];
+  for (var r = 0; r < N; r++) {
+    var adRow = [];
+    for (var c = 0; c < N; c++) adRow.push(false);
+    appState.autoDots.push(adRow);
+  }
   appState.errors   = {};
   appState.solved   = false;
   appState.curDiff  = diff;
@@ -1008,6 +1041,7 @@ function launchPuzzle(puzzle, diff, fromSkip) {
   document.getElementById('meta-skip').style.display      = fromSkip ? 'inline' : 'none';
   document.getElementById('win-overlay').classList.remove('show');
   document.getElementById('btn-skip').style.display       = 'inline-block';
+  document.getElementById('hint-result').textContent     = '';
 
   showGame();
   startTimer();
@@ -1094,8 +1128,35 @@ function setupGridInput() {
 
 function handleCell(r, c) {
   if (!appState.board || appState.solved) return;
+  var prev = appState.board[r][c];
   var _next = [DOT, EMPTY, STAR]; // EMPTY→DOT, DOT→STAR, STAR→EMPTY
-  appState.board[r][c] = _next[appState.board[r][c]];
+  var next = _next[prev];
+  appState.board[r][c] = next;
+
+  var DR = [-1,-1,-1, 0, 0, 1, 1, 1];
+  var DC = [-1, 0, 1,-1, 1,-1, 0, 1];
+
+  // Placing a star: auto-dot all empty neighbours
+  if (next === STAR) {
+    for (var i = 0; i < 8; i++) {
+      var nr = r + DR[i], nc = c + DC[i];
+      if (nr >= 0 && nr < N && nc >= 0 && nc < N && appState.board[nr][nc] === EMPTY) {
+        appState.board[nr][nc] = DOT;
+        appState.autoDots[nr][nc] = true;
+      }
+    }
+  }
+
+  // Removing a star: clear only auto-dots placed by this star
+  if (prev === STAR && next === EMPTY) {
+    for (var i = 0; i < 8; i++) {
+      var nr = r + DR[i], nc = c + DC[i];
+      if (nr >= 0 && nr < N && nc >= 0 && nc < N && appState.autoDots[nr][nc]) {
+        appState.board[nr][nc] = EMPTY;
+        appState.autoDots[nr][nc] = false;
+      }
+    }
+  }
 
   var result = validateBoard(appState.board, appState.puzzle.regionGrid);
   appState.errors = result.errors;
@@ -1150,6 +1211,33 @@ function showWin() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// HINT
+// ═══════════════════════════════════════════════════════════════════
+function doHint() {
+  if (!appState.puzzle || !appState.board) return;
+  var stars = appState.puzzle.stars;
+  var starSet = {};
+  for (var i = 0; i < stars.length; i++) starSet[stars[i].r + ',' + stars[i].c] = 1;
+
+  var total = 0, correct = 0;
+  for (var r = 0; r < N; r++)
+    for (var c = 0; c < N; c++)
+      if (appState.board[r][c] === STAR) {
+        total++;
+        if (starSet[r + ',' + c]) correct++;
+      }
+
+  var el = document.getElementById('hint-result');
+  if (total === 0) {
+    el.textContent = 'No stars placed yet.';
+  } else {
+    el.textContent = correct + ' of ' + total + ' star' + (total === 1 ? '' : 's') + ' correctly placed.';
+  }
+  // Auto-clear hint after 3 seconds
+  setTimeout(function() { if (el) el.textContent = ''; }, 3000);
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // SKIP
 // ═══════════════════════════════════════════════════════════════════
 function doSkip() {
@@ -1183,6 +1271,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (appState.curDiff) startNew(appState.curDiff);
   });
   document.getElementById('btn-skip').addEventListener('click', doSkip);
+  document.getElementById('btn-hint').addEventListener('click', doHint);
   document.getElementById('win-menu').addEventListener('click', function() {
     document.getElementById('win-overlay').classList.remove('show');
     showHome();
