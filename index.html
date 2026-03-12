@@ -8,20 +8,21 @@
 <title>Star Battle</title>
 <style>
   :root {
-    --bg: #0f0f1a;
-    --surface: #181828;
-    --card: #1e1e32;
-    --border: #2e2e4e;
-    --text: #e8e4f0;
-    --muted: #7878a0;
-    --gold: #f0c040;
-    --gold2: #d4a020;
-    --easy: #4db88c;
-    --medium: #6aaddf;
-    --hard: #c07ad0;
-    --expert: #e06070;
-    --err: #e05050;
-    --dot: #404060;
+    --bg: #f2f2f2;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --border: #d0d0d0;
+    --border-strong: #111111;
+    --text: #111111;
+    --muted: #888888;
+    --gold: #111111;
+    --gold2: #333333;
+    --easy: #111111;
+    --medium: #111111;
+    --hard: #111111;
+    --expert: #111111;
+    --err: #e03030;
+    --dot: #aaaaaa;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -50,7 +51,7 @@
   .nav-timer {
     background: var(--card); border: 1px solid var(--border);
     border-radius: 20px; padding: 5px 16px;
-    font-size: 16px; letter-spacing: 2px; color: var(--gold);
+    font-size: 16px; letter-spacing: 2px; color: var(--text);
     font-variant-numeric: tabular-nums;
   }
   .nav-new {
@@ -74,28 +75,28 @@
   .hero-star.big { font-size: 30px; opacity: 1; }
   .hero-title {
     font-size: 38px; font-weight: normal; letter-spacing: 8px;
-    color: var(--gold); text-shadow: 0 0 40px rgba(240,192,64,0.3);
+    color: var(--text); text-shadow: none; letter-spacing: 10px;
     margin-bottom: 10px;
   }
   .hero-sub {
-    font-size: 13px; color: var(--muted); line-height: 1.9; letter-spacing: 0.3px;
+    font-size: 13px; color: var(--muted); line-height: 1.9; letter-spacing: 0.3px; font-style: italic;
   }
 
   /* stat bar */
   .overall-stats {
     display: flex; gap: 12px; margin-bottom: 24px;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 14px;
+    background: var(--surface); border: 1.5px solid var(--border-strong);
+    border-radius: 0px; padding: 14px;
   }
   .stat-item { flex: 1; text-align: center; }
-  .stat-num { font-size: 22px; color: var(--gold); display: block; }
+  .stat-num { font-size: 22px; color: var(--text); display: block; font-weight: bold; }
   .stat-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
 
   /* diff cards */
   .diff-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
   .diff-card {
-    background: var(--card); border: 1.5px solid var(--border);
-    border-radius: 14px; padding: 16px 18px;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 0px; padding: 16px 18px;
     transition: border-color .2s;
   }
   .diff-card:hover { border-color: var(--muted); }
@@ -162,10 +163,10 @@
   /* grid */
   #grid-wrap {
     position: relative;
-    border: 2px solid var(--border);
-    border-radius: 10px;
+    border: 2.5px solid #111111;
+    border-radius: 0px;
     overflow: hidden;
-    box-shadow: 0 4px 32px rgba(0,0,0,0.5), 0 0 60px rgba(240,192,64,0.04);
+    box-shadow: none;
     touch-action: none;
   }
   #grid-canvas { display: block; }
@@ -180,14 +181,14 @@
   }
   .progress-bar-fill {
     height: 100%; border-radius: 2px;
-    background: var(--gold); transition: width .3s;
+    background: #111111; transition: width .3s;
   }
   .progress-text { font-size: 12px; color: var(--muted); min-width: 36px; text-align: right; }
 
   .btn-skip {
     margin-top: 16px; padding: 11px 36px;
-    background: none; border: 1.5px solid var(--border);
-    border-radius: 10px; color: var(--muted); font-size: 13px;
+    background: none; border: 1.5px solid #aaaaaa;
+    border-radius: 0px; color: var(--muted); font-size: 13px;
     cursor: pointer; font-family: inherit; letter-spacing: 0.3px;
     transition: color .15s, border-color .15s;
   }
@@ -196,24 +197,24 @@
   /* ── WIN OVERLAY ── */
   #win-overlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(10,10,20,0.85);
+    background: rgba(240,240,240,0.92);
     align-items: center; justify-content: center; z-index: 200;
   }
   #win-overlay.show { display: flex; }
   .win-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 20px; padding: 34px 38px;
+    background: #ffffff; border: 2px solid #111111;
+    border-radius: 0px; padding: 34px 38px;
     text-align: center; max-width: 310px; width: 90%;
-    box-shadow: 0 12px 60px rgba(0,0,0,0.6), 0 0 80px rgba(240,192,64,0.08);
+    box-shadow: 4px 4px 0px #111111;
     display: flex; flex-direction: column; align-items: center; gap: 8px;
   }
   .win-emoji { font-size: 52px; }
-  .win-title { font-size: 30px; font-weight: normal; letter-spacing: 4px; color: var(--gold); }
+  .win-title { font-size: 30px; font-weight: normal; letter-spacing: 4px; color: var(--text); }
   .win-time { font-size: 26px; color: var(--text); letter-spacing: 2px; font-variant-numeric: tabular-nums; }
   .win-diff { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
   .win-stats {
-    display: flex; gap: 12px; background: var(--surface);
-    border-radius: 10px; padding: 12px 14px;
+    display: flex; gap: 12px; background: #f8f8f8;
+    border-radius: 0px; padding: 12px 14px; border: 1px solid var(--border);
     width: 100%; justify-content: space-around; margin: 6px 0;
   }
   .ws-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
@@ -226,13 +227,13 @@
   /* ── LOADING ── */
   #loading-overlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(10,10,20,0.92);
+    background: rgba(242,242,242,0.95);
     align-items: center; justify-content: center; z-index: 300;
     flex-direction: column; gap: 16px;
   }
   #loading-overlay.show { display: flex; }
-  .loading-stars { font-size: 28px; letter-spacing: 8px; animation: pulse 1.2s infinite; }
-  .loading-text { font-size: 14px; color: var(--muted); letter-spacing: 2px; }
+  .loading-stars { font-size: 28px; letter-spacing: 8px; animation: pulse 1.2s infinite; color: #111; }
+  .loading-text { font-size: 14px; color: #555; letter-spacing: 2px; }
   @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
 </style>
 </head>
@@ -291,9 +292,10 @@
     </div>
   </div>
 
+  <div id="resume-banner" style="display:none;background:#fff;border:1.5px solid #111;padding:14px 18px;margin-bottom:16px;"></div>
   <div class="diff-cards" id="diff-cards"></div>
   <div class="home-footer">
-    Tap once → place star &nbsp;·&nbsp; tap again → dot marker &nbsp;·&nbsp; tap again → clear<br/>
+    Tap once → dot marker &nbsp;·&nbsp; tap again → place star &nbsp;·&nbsp; tap again → clear<br/>
     Works offline · progress saved automatically
   </div>
 </div>
@@ -331,17 +333,18 @@ var DIFFS = {
   expert: { label:'Expert', color:'#e06070', dark:'#801828', regionStyle:'chaotic'   }
 };
 
+// B&W: alternating white/light-gray fills, all-black borders, black stars
 var REGION_PALETTE = [
-  '#1a3a2a','#1a2a3a','#2a1a3a','#2a3a1a','#3a2a1a',
-  '#3a1a2a','#1a3a3a','#3a3a1a','#2a2a3a','#3a1a1a'
+  '#ffffff','#ebebeb','#ffffff','#ebebeb','#ffffff',
+  '#ebebeb','#ffffff','#ebebeb','#ffffff','#ebebeb'
 ];
 var REGION_BORDER = [
-  '#2d7a4f','#2d5a8a','#6a3a8a','#5a8a2d','#8a5a2d',
-  '#8a2d5a','#2d8a8a','#8a8a2d','#4a4a8a','#8a2d2d'
+  '#111111','#111111','#111111','#111111','#111111',
+  '#111111','#111111','#111111','#111111','#111111'
 ];
 var STAR_COLOR = [
-  '#60e0a0','#60b0f0','#d080f0','#a0e060','#f0b060',
-  '#f060a0','#60f0f0','#f0f060','#9090f0','#f08080'
+  '#111111','#111111','#111111','#111111','#111111',
+  '#111111','#111111','#111111','#111111','#111111'
 ];
 
 var EMPTY = 0, STAR = 1, DOT = 2;
@@ -715,48 +718,55 @@ function drawGrid(canvas, puzzle, board, errors) {
   var ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
 
-  // Fill cells
+  // Fill all cells white (or light-gray for odd regions), error = light red
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, totalPx, totalPx);
   for (var r = 0; r < N; r++) {
     for (var c = 0; c < N; c++) {
       var reg = regionGrid[r][c];
       var x = c * cellPx, y = r * cellPx;
       var isErr = !!errors[r + ',' + c];
-      ctx.fillStyle = isErr ? '#3a1515' : REGION_PALETTE[reg % REGION_PALETTE.length];
+      if (isErr) {
+        ctx.fillStyle = '#ffe0e0';
+      } else {
+        ctx.fillStyle = REGION_PALETTE[reg % REGION_PALETTE.length];
+      }
       ctx.fillRect(x, y, cellPx, cellPx);
-      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-      ctx.lineWidth = 0.5;
+    }
+  }
+
+  // Thin hairline grid lines (cell divisions within same region)
+  ctx.strokeStyle = '#cccccc';
+  ctx.lineWidth = 0.5;
+  for (var r = 0; r < N; r++) {
+    for (var c = 0; c < N; c++) {
+      var x = c * cellPx, y = r * cellPx;
       ctx.strokeRect(x + 0.25, y + 0.25, cellPx - 0.5, cellPx - 0.5);
     }
   }
 
-  // Thick region borders
-  ctx.lineWidth = 2.5;
+  // Thick black region borders (only draw the boundary between different regions)
+  ctx.strokeStyle = '#111111';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'square';
   for (var r = 0; r < N; r++) {
     for (var c = 0; c < N; c++) {
-      var reg = regionGrid[r][c];
       var x = c * cellPx, y = r * cellPx;
-      ctx.strokeStyle = REGION_BORDER[reg % REGION_BORDER.length];
-      if (c + 1 < N && regionGrid[r][c + 1] !== reg) {
+      // Right border
+      if (c + 1 < N && regionGrid[r][c + 1] !== regionGrid[r][c]) {
         ctx.beginPath(); ctx.moveTo(x + cellPx, y); ctx.lineTo(x + cellPx, y + cellPx); ctx.stroke();
       }
-      if (r + 1 < N && regionGrid[r + 1][c] !== reg) {
+      // Bottom border
+      if (r + 1 < N && regionGrid[r + 1][c] !== regionGrid[r][c]) {
         ctx.beginPath(); ctx.moveTo(x, y + cellPx); ctx.lineTo(x + cellPx, y + cellPx); ctx.stroke();
       }
     }
   }
 
-  // Outer border
-  ctx.strokeStyle = '#404060';
-  ctx.lineWidth = 1;
-  for (var r = 0; r < N; r++) {
-    for (var c = 0; c < N; c++) {
-      var x = c * cellPx, y = r * cellPx;
-      if (r === 0)     { ctx.beginPath(); ctx.moveTo(x, y);          ctx.lineTo(x + cellPx, y);          ctx.stroke(); }
-      if (c === 0)     { ctx.beginPath(); ctx.moveTo(x, y);          ctx.lineTo(x, y + cellPx);          ctx.stroke(); }
-      if (r === N - 1) { ctx.beginPath(); ctx.moveTo(x, y + cellPx); ctx.lineTo(x + cellPx, y + cellPx); ctx.stroke(); }
-      if (c === N - 1) { ctx.beginPath(); ctx.moveTo(x + cellPx, y); ctx.lineTo(x + cellPx, y + cellPx); ctx.stroke(); }
-    }
-  }
+  // Outer border (always thick black)
+  ctx.strokeStyle = '#111111';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(1.5, 1.5, totalPx - 3, totalPx - 3);
 
   // Stars and dots
   for (var r = 0; r < N; r++) {
@@ -768,22 +778,16 @@ function drawGrid(canvas, puzzle, board, errors) {
       var isErr2 = !!errors[r + ',' + c];
 
       if (state === STAR) {
-        var sz = cellPx * 0.38;
+        var sz = cellPx * 0.36;
         ctx.save();
         drawStar5(ctx, cx2, cy2, sz, sz * 0.42);
-        ctx.fillStyle = isErr2 ? '#ff6060' : STAR_COLOR[reg % STAR_COLOR.length];
+        ctx.fillStyle = isErr2 ? '#cc0000' : '#111111';
         ctx.fill();
-        if (!isErr2) {
-          ctx.shadowColor = STAR_COLOR[reg % STAR_COLOR.length];
-          ctx.shadowBlur = 8;
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
         ctx.restore();
       } else if (state === DOT) {
         ctx.beginPath();
-        ctx.arc(cx2, cy2, cellPx * 0.1, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(150,150,200,0.3)';
+        ctx.arc(cx2, cy2, cellPx * 0.12, 0, Math.PI * 2);
+        ctx.fillStyle = '#aaaaaa';
         ctx.fill();
       }
     }
@@ -809,6 +813,25 @@ var appState = {
 
 function saveStats()   { DB.set('stats', stats);   }
 function saveSkipped() { DB.set('skip',  skipped);  }
+
+function saveActiveGame() {
+  if (!appState.puzzle || appState.solved) { DB.set('active', null); return; }
+  DB.set('active', {
+    puzzle:   appState.puzzle,
+    board:    appState.board,
+    secs:     appState.secs,
+    diff:     appState.curDiff,
+    fromSkip: appState.fromSkip
+  });
+}
+
+function loadActiveGame() {
+  return DB.get('active');
+}
+
+function clearActiveGame() {
+  DB.set('active', null);
+}
 
 function fmt(s) {
   var m = Math.floor(s / 60);
@@ -836,6 +859,9 @@ function stopTimer() {
 // ═══════════════════════════════════════════════════════════════════
 function showHome() {
   stopTimer();
+  if (appState.screen === 'game' && appState.puzzle && !appState.solved) {
+    saveActiveGame();
+  }
   appState.screen = 'home';
   document.getElementById('home').style.display = 'block';
   document.getElementById('game').style.display = 'none';
@@ -914,11 +940,57 @@ function renderHome() {
       };
     })(btns[b]));
   }
+
+  // Resume banner: show if there's a saved in-progress game
+  var resumeEl = document.getElementById('resume-banner');
+  var saved = loadActiveGame();
+  if (saved && saved.puzzle && saved.diff) {
+    var diffCfg = DIFFS[saved.diff] || {};
+    resumeEl.style.display = 'block';
+    resumeEl.innerHTML =
+      '<div style="font-size:12px;color:#888;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">In progress</div>'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;">'
+      + '<span style="font-size:16px;color:#111">' + (diffCfg.label || saved.diff) + ' &nbsp;&#183;&nbsp; ' + fmt(saved.secs) + '</span>'
+      + '<button id="btn-resume" style="background:#111;color:#fff;border:none;padding:9px 22px;font-family:inherit;font-size:13px;letter-spacing:1px;cursor:pointer;">Continue</button>'
+      + '</div>';
+    document.getElementById('btn-resume').addEventListener('click', function() {
+      var s = loadActiveGame();
+      if (s) resumeGame(s);
+    });
+  } else {
+    resumeEl.style.display = 'none';
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // GAME LAUNCH
 // ═══════════════════════════════════════════════════════════════════
+function resumeGame(saved) {
+  appState.puzzle   = saved.puzzle;
+  appState.board    = saved.board;
+  appState.secs     = saved.secs;
+  appState.curDiff  = saved.diff;
+  appState.fromSkip = saved.fromSkip;
+  appState.errors   = {};
+  appState.solved   = false;
+
+  document.getElementById('meta-diff').textContent   = DIFFS[saved.diff].label + ' \u00b7 10\u00d710';
+  document.getElementById('meta-skip').style.display = saved.fromSkip ? 'inline' : 'none';
+  document.getElementById('win-overlay').classList.remove('show');
+  document.getElementById('btn-skip').style.display  = 'inline-block';
+  document.getElementById('timer').textContent       = fmt(saved.secs);
+
+  // Resume timer from saved time
+  stopTimer();
+  appState.timerID = setInterval(function() {
+    appState.secs++;
+    document.getElementById('timer').textContent = fmt(appState.secs);
+  }, 1000);
+
+  showGame();
+  render();
+}
+
 function launchPuzzle(puzzle, diff, fromSkip) {
   appState.puzzle   = puzzle;
   appState.board    = [];
@@ -943,6 +1015,7 @@ function launchPuzzle(puzzle, diff, fromSkip) {
 }
 
 function startNew(diff) {
+  clearActiveGame();
   if (!stats[diff]) stats[diff] = { c: 0, p: 0 };
   stats[diff].p++;
   saveStats();
@@ -1021,7 +1094,8 @@ function setupGridInput() {
 
 function handleCell(r, c) {
   if (!appState.board || appState.solved) return;
-  appState.board[r][c] = (appState.board[r][c] + 1) % 3;
+  var _next = [DOT, EMPTY, STAR]; // EMPTY→DOT, DOT→STAR, STAR→EMPTY
+  appState.board[r][c] = _next[appState.board[r][c]];
 
   var result = validateBoard(appState.board, appState.puzzle.regionGrid);
   appState.errors = result.errors;
@@ -1032,6 +1106,7 @@ function handleCell(r, c) {
     stopTimer();
     stats[appState.curDiff].c++;
     saveStats();
+    clearActiveGame();
     if (appState.fromSkip) {
       skipped[appState.curDiff] = skipped[appState.curDiff].slice(1);
       saveSkipped();
@@ -1079,6 +1154,7 @@ function showWin() {
 // ═══════════════════════════════════════════════════════════════════
 function doSkip() {
   stopTimer();
+  clearActiveGame();
   var diff = appState.curDiff;
   if (!appState.fromSkip) {
     var arr = skipped[diff] ? skipped[diff].slice() : [];
